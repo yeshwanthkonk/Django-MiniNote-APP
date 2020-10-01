@@ -1,0 +1,26 @@
+{% extends 'Base.html' %}
+{% block style %}
+<style>
+    body{
+        background-color: rgb(255, 173, 173);
+        color: black;
+    }
+</style>
+{% endblock style %}
+{% block respective %}
+{% if note %}
+<div style='padding: 10px; background-color: tomato; color: white;'>{{ note }}</div>
+{% endif %}
+<form method="POST" style="margin-top: 10%;">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="username">User Name</label>
+        <input type="text" class="form-control" id="username" name="username" autofocus>
+    </div>
+    <div class="form-group">
+      <label for="exampleInputPassword1">Password</label>
+      <input type="password" class="form-control" id="exampleInputPassword1" name='password'>
+    </div>
+    <button type="submit" class="btn btn-primary">Log In</button>
+  </form>
+{% endblock respective %}

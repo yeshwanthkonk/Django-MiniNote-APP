@@ -1,0 +1,21 @@
+{% extends 'Base.html' %}
+{% block style %}
+<style>
+    body{
+        background-color: rgb(255, 202, 202);
+        color: black;
+        text-align: center;
+    }
+</style>
+{% endblock style %}
+{% block respective %}
+<div class="col-md-5 p-lg-5 mx-auto my-5">
+    <h1 class="display-4 font-weight-normal">Mini Note a Daily Note</h1>
+    <p class="lead font-weight-normal">It seams to be your unauthorized user to use Mini Note Feature, Please create an account and make your self accessible to Mini Note.</p>
+    <a href="{% url 'login' %}" type='button' class='btn btn-primary btn-lg'>Login</a>
+    <a href="{% url 'signup' %}" type='button' class='btn btn-warning btn-lg'>Sign up</a>
+</div>
+<section style="margin-top: 20%;">
+
+</section>
+{% endblock respective %}

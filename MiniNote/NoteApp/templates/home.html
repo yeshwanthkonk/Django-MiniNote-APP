@@ -1,0 +1,199 @@
+{% extends 'Base.html' %}
+{% block style %}
+<style>
+    body{
+        background-color: rgb(255, 173, 173);
+        color: black;
+        text-align: center;
+    }
+</style>
+{% endblock style %}
+{% block home %}
+<a href="{% url 'logout' %}" type='button' class='btn btn-success' style="margin-left: 5px;">Log Out</a>
+{% endblock home %}
+{% block respective %}
+<div class='row' style="margin-top: 10px;">
+    <div class="col-2">
+
+    </div>
+    <div class="col-8">
+        <button type="button" class="btn btn-warning btn-lg" data-toggle="modal" data-target="#exampleModal">New Note</button>
+<div style="text-align: left;" class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">New Note</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="form-group">
+            <label for="recipient-name" class="col-form-label">Title:</label>
+            <input type="text" class="form-control" id="title" name='title'>
+          </div>
+          <div class="form-group">
+            <label for="message-text" class="col-form-label">Note:</label>
+            <textarea class="form-control" id="note" name='note'></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="make_note('POST')">Make Note</button>
+      </div>
+    </div>
+  </div>
+</div>
+    </div>
+
+    <div style="text-align: left;" class="modal fade" id="editModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">New Note</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form>
+                <div class="form-group">
+                  <label for="recipient-name" class="col-form-label">Title:</label>
+                  <input type="text" class="form-control" id="edit-title" name='title'>
+                </div>
+                <div class="form-group">
+                  <label for="message-text" class="col-form-label">Note:</label>
+                  <textarea class="form-control" id="edit-note" name='note'></textarea>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id='edit-click'>Change Note</button>
+            </div>
+          </div>
+        </div>
+      </div>
+</div>
+<script>
+    function edit(id){
+        document.getElementById('edit-click').setAttribute("onclick", `make_note('PATCH', ${id})`)
+        document.getElementById('edit-note').value = document.getElementById(`note-${id}`).innerText;
+        document.getElementById('edit-title').value = document.getElementById(`title-${id}`).innerText
+        $("#editModal").modal("show");
+    }
+    async function delet(id){
+        let csrftoken = getCookie('csrftoken');
+        let response = await fetch(`/api/v1/note/delete/${id}`, {
+            method: "DELETE",
+            headers: {
+                'Content-Type': 'application/json;',
+                "X-CSRFToken": csrftoken
+            },
+        });
+        alert("Successfull Deleted the note");
+        location.reload();
+    }
+
+    function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+    async function make_note(type, id=null){
+        if(type=='POST'){
+            var title = document.getElementById('title').value;
+            var note = document.getElementById('note').value;
+            var data={title, note};
+            var url = '/api/v1/note/new'
+            var note = "Successfull Created the Note";
+        }
+        else if(type == 'PATCH'){
+            var title = document.getElementById('edit-title').value;
+            var note = document.getElementById('edit-note').value;
+            console.log(title, note)
+            var data={title, note};
+            var url = `/api/v1/note/update/${id}`;
+            var note = "Successfull Changed the Note";
+        }
+        if(title.length != 0 && note.length != 0){
+            let csrftoken = getCookie('csrftoken');
+            let response = await fetch(url, {
+            method: type,
+            headers: {
+                'Content-Type': 'application/json;',
+                "X-CSRFToken": csrftoken
+            },
+            body: JSON.stringify(data)
+            });
+            let result = await response.json();
+            if(result.detail === undefined){
+                alert(note);
+                location.reload();
+            }
+            else
+            alert(result.detail)
+            
+        }
+        else{
+            alert('Note and Title cannot be empty')
+        }
+    }
+    var color = ['primary', 'secondary', 'success', 'danger', 'warning', 'info', 'dark']
+    async function intial(){
+        let response = await fetch('http://localhost:8000/api/v1/note/get');
+        let data = await response.json();
+        console.log(data);
+        let co = 0;
+        data.forEach((item)=>{
+            var div_1 = document.createElement('div');
+            div_1.setAttribute('class', 'row');
+            div_1.setAttribute('style', 'margin-top: 10px;');
+            var div_2 = document.createElement('div');
+            div_2.setAttribute('class', 'col-2');
+            var div_3 = document.createElement('div');
+
+            div_3.setAttribute('class', 'col-8');
+            var div_note = document.createElement('div');
+            div_note.setAttribute("class", `card text-white bg-${color[co%color.length]} mb-3`);
+            var div_header = document.createElement('div');
+            div_header.setAttribute("class", "card-header");
+            div_header.innerHTML = `
+            <button onclick="edit(${item.id})" class='btn-light' style="padding: 3px; border-radius: 4px; border:0px;">Edit Note</button>
+            <button onclick="delet(${item.id})" class='btn-light' style="padding: 3px; border-radius: 4px; border:0px;">Delete Note</button>
+             `
+            var div_body = document.createElement('div');
+            div_body.setAttribute("class", "card-body");
+            div_body.innerHTML = `
+            <h3 class="card-title" id='title-${item.id}'>${item.title}</h3>
+            <p class="card-text" id='note-${item.id}'>${item.note}</p>
+            `
+            div_note.append(div_header, div_body);
+            div_3.append(div_note); 
+
+            var div_4 = document.createElement('div');
+            div_4.setAttribute('class', 'col-2');
+            div_1.append(div_2, div_3, div_4);
+            document.getElementById('cont').append(div_1);
+            co++;
+        })
+    }
+    intial();
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+{% endblock respective %}
